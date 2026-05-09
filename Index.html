@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Опросник близости</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#0d0b0f;--sur:#161218;--sur2:#1e1822;--bdr:rgba(255,255,255,.07);--txt:#f0eaf5;--mut:rgba(240,234,245,.45);--af:#e8a0c0;--am:#7eb8d4;--am2:#b8d4a0;--r:16px;--t:.22s cubic-bezier(.4,0,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+#splash{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;position:relative;overflow:hidden}
+#splash::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(180,100,140,.12) 0%,transparent 70%);pointer-events:none}
+.sym{font-size:52px;margin-bottom:20px;opacity:0;animation:fU .8s .2s forwards}
+.tit{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,8vw,48px);font-weight:300;letter-spacing:.02em;margin-bottom:12px;opacity:0;animation:fU .8s .4s forwards}
+.sub{font-size:13px;color:var(--mut);max-width:290px;line-height:1.7;margin-bottom:32px;opacity:0;animation:fU .8s .6s forwards}
+.btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:310px;opacity:0;animation:fU .8s .8s forwards}
+.btn{padding:16px 20px;border-radius:13px;border:1px solid var(--bdr);background:var(--sur);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all var(--t);display:flex;align-items:center;gap:12px;text-align:left;width:100%}
+.btn:active{transform:scale(.97)}
+.btn.w{border-color:rgba(232,160,192,.3)}.btn.w:hover{background:rgba(232,160,192,.08);border-color:rgba(232,160,192,.5)}
+.btn.h{border-color:rgba(126,184,212,.3)}.btn.h:hover{background:rgba(126,184,212,.08);border-color:rgba(126,184,212,.5)}
+.btn.res{border-color:rgba(184,212,160,.3);justify-content:center;font-size:13px;color:var(--mut);padding:12px}
+.btn.res:hover{background:rgba(184,212,160,.08);color:var(--txt)}
+.btn.rst{border-color:rgba(224,112,112,.18);justify-content:center;font-size:12px;color:rgba(224,112,112,.5);padding:10px}
+.btn.rst:hover{background:rgba(224,112,112,.06);color:#e07070}
+.bi{font-size:20px;flex-shrink:0}.bt{display:flex;flex-direction:column;gap:2px}
+.bl{font-size:14px;font-weight:500}.bd{font-size:11px;color:var(--mut)}
+.sdots{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;min-height:20px}
+.sdot{font-size:10px;padding:3px 9px;border-radius:9px;background:rgba(184,212,160,.12);color:var(--am2)}
+#quiz{display:none;min-height:100vh}
+.qhdr{position:sticky;top:0;z-index:100;background:rgba(13,11,15,.94);backdrop-filter:blur(14px);padding:11px 16px;border-bottom:1px solid var(--bdr)}
+.qhdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.qbadge{font-size:11px;padding:4px 10px;border-radius:18px;font-weight:500;flex-shrink:0}
+.qbadge.w{background:rgba(232,160,192,.15);color:var(--af)}
+.qbadge.h{background:rgba(126,184,212,.15);color:var(--am)}
+.qback{background:none;border:1px solid var(--bdr);color:var(--mut);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 10px;border-radius:18px;cursor:pointer;transition:all var(--t)}
+.qback:hover{color:var(--txt);border-color:rgba(255,255,255,.2)}
+.qsl{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center}
+.pw{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.pb{height:100%;border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.pb.w{background:linear-gradient(90deg,#c87090,var(--af))}
+.pb.h{background:linear-gradient(90deg,#5090b0,var(--am))}
+.qbody{padding:14px 16px 135px;max-width:600px;margin:0 auto}
+.shdr{margin:24px 0 13px;padding-bottom:9px;border-bottom:1px solid var(--bdr)}
+.shdr:first-child{margin-top:4px}
+.smeta{display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap}
+.snum{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+.ibadge{font-size:9px;padding:2px 8px;border-radius:7px;font-weight:600}
+.i1{background:rgba(144,210,130,.1);color:#70c050}
+.i2{background:rgba(210,200,80,.1);color:#c8a820}
+.i3{background:rgba(220,130,60,.1);color:#d07020}
+.i4{background:rgba(210,70,70,.1);color:#cc4848}
+.i5{background:rgba(160,70,210,.1);color:#a840c8}
+.sname{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;line-height:1.2}
+.snote{font-size:10px;color:rgba(210,170,50,.7);margin-top:4px;line-height:1.5}
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:13px;padding:13px 13px 10px;margin-bottom:7px;transition:border-color var(--t)}
+.card.ans{border-color:rgba(255,255,255,.14)}
+.qt{font-size:13px;line-height:1.5;margin-bottom:10px;color:rgba(240,234,245,.9)}
+.rrow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.rbtn{height:42px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:var(--mut);font-family:'DM Sans',sans-serif;font-size:9px;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;user-select:none;padding:2px}
+.rbtn:active{transform:scale(.86)}
+.rv{font-size:11px;font-weight:700;line-height:1}
+.rl{font-size:7px;font-weight:400;line-height:1;opacity:0;text-align:center}
+.rbtn[data-v="-3"].on{background:#5c1a1a;border-color:#b82828;color:#ffaaaa}
+.rbtn[data-v="-2"].on{background:#4a2510;border-color:#8a3810;color:#ffcc80}
+.rbtn[data-v="-1"].on{background:#2e2c12;border-color:#665818;color:#e8d860}
+.rbtn[data-v="0"].on{background:#1c2020;border-color:#3c4646;color:#88a0a0}
+.rbtn[data-v="1"].on{background:#142816;border-color:#285c28;color:#78d078}
+.rbtn[data-v="2"].on{background:#101e2e;border-color:#1a6090;color:#58b8e0}
+.rbtn[data-v="3"].on{background:#121230;border-color:#3040cc;color:#8080f8}
+.rbtn.on .rv{font-size:12px}.rbtn.on .rl{opacity:.85}
+.leg{background:var(--sur2);border:1px solid var(--bdr);border-radius:9px;padding:11px 13px;margin-bottom:16px;font-size:10px}
+.legt{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:7px}
+.legr{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px}
+.legrow{display:flex;align-items:center;gap:6px}
+.legd{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.ntog{font-size:10px;color:var(--mut);background:none;border:none;cursor:pointer;padding:4px 0 0;display:block;transition:color .2s}
+.ntog:hover{color:var(--txt)}
+.nin{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:7px;padding:6px 8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:11px;margin-top:5px;resize:none;outline:none;display:none}
+.nin:focus{border-color:rgba(255,255,255,.2)}
+.qftr{position:fixed;bottom:0;left:0;right:0;padding:11px 16px calc(11px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(13,11,15,.98) 25%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.qcnt{font-size:10px;color:var(--mut)}
+.sbtn{width:100%;max-width:400px;padding:13px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all var(--t);pointer-events:all;opacity:.28;transform:translateY(5px)}
+.sbtn.w{background:linear-gradient(135deg,#c87090,#e8a0c0);color:#1a0810}
+.sbtn.h{background:linear-gradient(135deg,#5090b0,#7eb8d4);color:#081018}
+.sbtn.on{opacity:1;transform:translateY(0)}
+.sbtn:active{transform:scale(.97)}
+#results{display:none;min-height:100vh}
+.rhdr{padding:32px 20px 22px;text-align:center;position:relative}
+.rhdr::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(184,212,160,.08) 0%,transparent 70%);pointer-events:none}
+.rtit{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,7vw,40px);font-weight:300;margin-bottom:6px}
+.rsub{font-size:12px;color:var(--mut)}
+.rbody{padding:0 16px 90px;max-width:640px;margin:0 auto}
+.ract{display:flex;gap:7px;margin-bottom:17px;flex-wrap:wrap}
+.abtn{padding:8px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--sur);color:var(--mut);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all var(--t)}
+.abtn:hover{color:var(--txt);border-color:rgba(255,255,255,.2)}
+.abtn.p{border-color:rgba(184,212,160,.3);color:var(--am2)}
+.abtn.p:hover{background:rgba(184,212,160,.06)}
+.rtabs{display:flex;gap:4px;margin-bottom:20px;padding:3px;background:var(--sur);border-radius:11px;border:1px solid var(--bdr);overflow-x:auto}
+.tbtn{flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:var(--mut);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;cursor:pointer;transition:all var(--t);white-space:nowrap;min-width:50px}
+.tbtn.on{background:var(--sur2);color:var(--txt)}
+.tc{display:none}.tc.on{display:block}
+.ms{margin-bottom:20px}
+.mst{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mb{font-size:9px;padding:2px 6px;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:500}
+.mb.hot{background:rgba(144,200,144,.13);color:var(--am2)}
+.mb.exp{background:rgba(232,160,192,.11);color:var(--af)}
+.mi{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:11px 12px;margin-bottom:5px;display:flex;align-items:center;gap:10px;animation:fU .25s both}
+.mit{flex:1;font-size:12px;line-height:1.4}
+.msc{display:flex;gap:4px;flex-shrink:0}
+.sc{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;min-width:26px;text-align:center}
+.sc.f{background:rgba(232,160,192,.13);color:var(--af)}
+.sc.m{background:rgba(126,184,212,.13);color:var(--am)}
+.es{text-align:center;padding:32px 16px;color:var(--mut);font-size:12px}
+.ws{display:flex;gap:8px;margin-bottom:16px}
+.wc{flex:1;padding:10px;border-radius:10px;border:1px solid var(--bdr);text-align:center}
+.wcn{font-weight:600;font-size:12px;margin-bottom:2px}
+.wcs{color:var(--mut);font-size:11px}
+.wc.f.done{border-color:rgba(232,160,192,.3)}
+.wc.m.done{border-color:rgba(126,184,212,.3)}
+.wc.done .wcs{color:var(--am2)}
+.wc.pend .wcs{color:rgba(220,160,50,.7)}
+.ftcard{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:8px}
+.ftarea{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:9px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;padding:12px;resize:vertical;min-height:110px;margin-top:6px;transition:border var(--t)}
+.ftarea:focus{outline:none;border-color:rgba(232,160,192,.4)}
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999;align-items:center;justify-content:center;padding:20px}
+.moverlay.on{display:flex}
+.mbox{background:var(--sur);border:1px solid var(--bdr);border-radius:18px;padding:24px 20px;max-width:300px;width:100%;text-align:center;animation:fU .2s both}
+.mtit{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:8px}
+.mtxt{font-size:11px;color:var(--mut);line-height:1.6;margin-bottom:16px}
+.mopts{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.mopt{padding:11px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--sur2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mut);transition:all var(--t);text-align:left;display:flex;align-items:center;gap:8px;width:100%}
+.mopt:hover{border-color:rgba(224,80,80,.4);color:#f08080;background:rgba(224,80,80,.06)}
+.mcan{width:100%;padding:11px;border-radius:9px;border:1px solid var(--bdr);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--mut);cursor:pointer;transition:all var(--t)}
+.mcan:hover{color:var(--txt)}
+@keyframes fU{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.8}}
+
+</style>
+</head>
+<body>
+
+<div class="moverlay" id="rst">
+  <div class="mbox">
+    <div class="mtit">Сбросить данные</div>
+    <div class="mtxt">Выберите чьи ответы удалить. Действие необратимо.</div>
+    <div class="mopts">
+      <button class="mopt" onclick="doReset('wife')">🌸 Ответы жены</button>
+      <button class="mopt" onclick="doReset('husband')">🌊 Ответы мужа</button>
+      <button class="mopt" onclick="doReset('all')">⚠️ Всё полностью</button>
+    </div>
+    <button class="mcan" onclick="cm('rst')">Отмена</button>
+  </div>
+</div>
+
+<div id="splash">
+  <div class="sym">🌙</div>
+  <h1 class="tit">Опросник близости</h1>
+  <p class="sub">Заполните анкеты отдельно — результаты покажут только общие совпадения.</p>
+  <div class="btns">
+    <div class="sdots" id="sdots"></div>
+    <button class="btn w" onclick="startQ('wife')">
+      <span class="bi">🌸</span>
+      <span class="bt"><span class="bl">Для жены</span><span class="bd" id="wd">Начать анкету</span></span>
+    </button>
+    <button class="btn h" onclick="startQ('husband')">
+      <span class="bi">🌊</span>
+      <span class="bt"><span class="bl">Для мужа</span><span class="bd" id="hd">Начать анкету</span></span>
+    </button>
+    <button class="btn res" onclick="goRes()" id="resBtn" style="display:none">✨ Посмотреть результаты</button>
+    <button class="btn rst" onclick="om('rst')" id="rstBtn" style="display:flex;justify-content:center">🗑 Сбросить данные</button>
+  </div>
+</div>
+
+<div id="quiz">
+  <div class="qhdr">
+    <div class="qhdr-top">
+      <button class="qback" onclick="qBack()">← Назад</button>
+      <span class="qsl" id="qsl"></span>
+      <span class="qbadge" id="qbadge"></span>
+    </div>
+    <div class="pw"><div class="pb" id="pb" style="width:0%"></div></div>
+  </div>
+  <div class="qbody" id="qbody"></div>
+  <div class="qftr">
+    <div class="qcnt" id="qcnt"></div>
+    <button class="sbtn" id="sbtn" onclick="submitQ()">Сохранить ответы</button>
+  </div>
+</div>
+
+<div id="results">
+  <div class="rhdr">
+    <h2 class="rtit">Ваши совпадения</h2>
+    <p class="rsub" id="rsub"></p>
+  </div>
+  <div class="rbody">
+    <div class="ract">
+      <button class="abtn" onclick="goHome()">← Главная</button>
+      <button class="abtn p" onclick="refRes()">🔄 Обновить</button>
+      <button class="abtn" onclick="startQ('wife')" id="ew" style="display:none">✏️ Жена</button>
+      <button class="abtn" onclick="startQ('husband')" id="eh" style="display:none">✏️ Муж</button>
+    </div>
+    <div class="ws" id="ws"></div>
+    <div class="rtabs">
+      <button class="tbtn on" onclick="swTab('hot')">🔥 Совпали</button>
+      <button class="tbtn" onclick="swTab('explore')">💫 Один хочет</button>
+      <button class="tbtn" onclick="swTab('conflict')">⚡ Конфликт</button>
+      <button class="tbtn" onclick="swTab('stats')">📊 Статистика</button>
+      <button class="tbtn" onclick="swTab('freeText')">📝 Слова</button>
+    </div>
+    <div id="tHot" class="tc on"></div>
+    <div id="tExplore" class="tc"></div>
+    <div id="tConflict" class="tc"></div>
+    <div id="tStats" class="tc"></div>
+    <div id="tFreeText" class="tc"></div>
+  </div>
+</div>
+
+<script>
+const SECTIONS=[
+  {t:'Что привлекает в партнёре — внешность и тело',i:1,n:'Оценивай честно — это помогает партнёру понять твои предпочтения.',q:['Руки, кисти, пальцы','Плечи и спина','Грудь','Живот и талия','Ягодицы','Бёдра и ноги','Шея и ключицы','Губы','Глаза и взгляд','Голос — тембр и интонации','Высокий рост возбуждает','Стройное и подтянутое телосложение','Мускулистое, атлетическое тело','Мягкое, пышное телосложение','Гладкое тело без волос','Естественное тело с волосами']},
+  {t:'Что привлекает — запах, звук, ощущения',i:1,n:null,q:['Натуральный запах тела','Запах духов или парфюма','Запах кожи после душа','Тепло тела в объятиях','Прикосновение рук партнёра','Голос во время возбуждения','Звуки удовольствия партнёра','Долгий зрительный контакт заводит']},
+  {t:'Романтика и эмоциональная близость',i:1,n:null,q:['Свидания как в начале отношений','Совместная ванна при свечах','Совместный душ','Массаж без перехода в секс','Массаж с переходом в секс','Медленный танец','Танец с другими людьми — эротический флёр','Долгие поцелуи без продолжения','Секс при свечах или под музыку','Откровенные сообщения и сексинг в течение дня','Обмен интимными фото','Онлайн-секс по видеосвязи на расстоянии','Слова любви и зрительный контакт во время секса','Утренний секс','Сбежать вдвоём в отель — только мы','Засыпать в обнимку голыми']},
+  {t:'Образ жены — одежда и стиль',i:1,n:null,q:['Кружевное или красивое бельё','Чулки и пояс для чулок','Корсет или боди','Прозрачное или открытое бельё','Шёлковый халат или пеньюар','Высокие каблуки или ботфорты в постели','Тематический костюм — медсестра, секретарша, горничная','Латекс, кожа или винил','Спортивная форма или лосины','Стриптиз — медленное раздевание','Маски или парики — смена образа','Жена раздета, муж одет']},
+  {t:'Образ мужа — что нравится жене видеть на нём',i:1,n:'Жена оценивает что нравится видеть. Муж — насколько сам хочет это надеть.',q:['Деловой образ — костюм или рубашка','Небрежно — рубашка расстёгнута, только джинсы','Классические боксеры','Облегающие слипы или тонги','Спортивная форма','Военный или брутальный образ','Смокинг или вечерний стиль','Фартук и ничего больше','Сразу нагота — одежда лишняя','Ошейник или браслет как знак подчинения']},
+  {t:'Прелюдия и поцелуи',i:2,n:null,q:['Долгая прелюдия 30+ минут','Минимум прелюдии — сразу к делу','Страстные поцелуи с языком','Поцелуи и покусывание шеи','Засосы — скрытые, под одеждой','Шёпот на ухо','Поцелуи груди и живота','Поцелуи внутренней стороны бёдер','Поцелуи ягодиц и стоп','Лёгкие покусывания','Дыхание и тепло кожи — медленно без спешки','Раздевание зубами']},
+  {t:'Сенсорные ощущения',i:2,n:null,q:['Лёд или холод на коже','Перья, шёлк или мех по коже','Лёгкое царапание ногтями','Глубокое царапание — оставлять следы','Шлепки по ягодицам — лёгкие, игривые','Шлепки по ягодицам — сильные','Массажное масло и ароматы','Зеркала — смотреть на себя во время секса','Полная темнота — только ощущения','Музыка во время секса']},
+  {t:'Тантра и йога-фантазии',i:2,n:'Медленно, осознанно, про энергию и связь — не только про секс.',q:['Тантрический секс — часами, без цели оргазма','Синхронное дыхание во время секса — дышим вместе','Медитация вдвоём перед сексом — войти в состояние','Медленный секс в позе лотоса — лицом к лицу, грудь к груди','Обмен энергией без проникновения — только прикосновения и дыхание','Тантрический массаж — йони-массаж для неё','Тантрический массаж — лингам-массаж для него','Практика задержки оргазма — многочасовое возбуждение']},
+  {t:'Эротические челленджи — попробуем?',i:2,n:'Оцени насколько хочется попробовать — не нравится ли сейчас, а хочу ли попытаться.',q:['Партнёр выбирает всё — позу, время, место','Я выбираю всё — партнёр подчиняется','Вечер полностью без слов — только тело и жесты','Секс в каждой комнате квартиры за один вечер','Провести день дома только в нижнем белье','Смотреть в глаза в момент оргазма','Массаж всего тела — нельзя торопиться','Угадывать части тела с завязанными глазами','Возбудить партнёра в душе не касаясь интимных мест','Первое свидание заново — от знакомства до финала']},
+  {t:'Позы и динамика секса',i:3,n:null,q:['Миссионерская — нежно, с объятиями','Наездница — жена сверху','Обратная наездница','Догги-стайл','Ложечкой — на боку','Стоя или у стены','На столе, кухне, ванной — вне спальни','Медленный чувственный секс','Быстрый страстный секс','Грубый секс — хват за волосы, жёсткие фрикции','Quickie — 5-10 минут','Долгий секс — час и больше']},
+  {t:'Игрушки и аксессуары',i:3,n:null,q:['Вибратор для неё — самостоятельно','Вибратор во время совместного секса','Вибратор-яйцо с пультом — в том числе вне дома','Виброкольцо на партнёре','Стимулятор простаты для него','Дилдо или увеличенные игрушки','Лубриканты с эффектом — тепло, холод, покалывание','Съедобные масла или сливки на теле','Стрип-покер или игры на раздевание','Поход вдвоём в секс-шоп']},
+  {t:'Съёмка и наблюдение',i:3,n:null,q:['Снять для себя и сразу удалить','Снять и оставить','Фото или видео с закрытыми лицами','Смотреть как партнёр мастурбирует','Мастурбировать при партнёре','Совместная мастурбация рядом']},
+  {t:'Ролевые игры и сценарии',i:3,n:null,q:['Незнакомцы — впервые встретились в баре','Учитель и студентка','Босс и секретарша','Доктор и пациентка или медсестра и пациент','Массажист и клиентка','Полицейский и нарушительница','Работник сервиса (курьер, сантехник) и хозяйка','Принц и служанка или викинг и пленница','Сценарий измены — якобы незнакомы, отель','Сценарий бывших — воссоединение','Историческая эпоха — Рим, Средневековье, 1920-е','Фэнтези — вампиры, оборотни, эльфы','Игра соблазнение — нужно уговорить']},
+  {t:'Секс дома и в путешествиях',i:2,n:'Оцени насколько привлекает — не только готов прямо сейчас, но и хотел бы попробовать.',q:['Спальня — нежно и уютно','Кухня — стол, столешница, у холодильника','Ванная или душ','Гостиная — диван, пол, перед телевизором','Коридор или прихожая — сразу с порога','Балкон или терраса','Лестница в подъезде','Номер отеля','Люкс или пентхаус — джакузи, вид из окна','Арендованный домик в лесу или у воды','Палатка в кемпинге','Глэмпинг — шатёр с кроватью на природе','Домик на дереве или бунгало над водой','Купе поезда ночью','Каюта на яхте или лайнере']},
+  {t:'Секс в транспорте и на природе',i:3,n:'Открытые пространства и нестандартные ситуации.',q:['Самолёт — туалет, mile high club','В машине на парковке ночью','На капоте или в багажнике на природе','В машине в городе — с риском','В арендованном фургоне или кемпере','На лодке или яхте в открытом море','Пляж ночью — темно и тихо','Пляж днём — за дюной или под полотенцем','Лес или поляна — вдали от людей','В горах — закат, никого вокруг','В поле или виноградниках','На крыше здания ночью','Под водопадом или у горной реки','Бассейн или открытый водоём ночью','Сауна или хаммам вдвоём']},
+  {t:'Секс в публичных и рискованных местах',i:4,n:'Адреналин от возможности быть замеченными. Оцени каждый сценарий.',q:['В кинотеатре — последний ряд в темноте','В примерочной магазина','В ресторане — туалет или тёмный угол','В лифте — между этажами','На вечеринке — отдельная комната или балкон','В клубе — уединённое место','На концерте или фестивале — в толпе','В парке ночью — с риском','В офисе после рабочего дня','В библиотеке — между стеллажами','В чужом доме пока хозяев нет','На смотровой площадке — высота и ветер','В заброшенном здании','На стадионе — пустые трибуны','В музее или галерее после закрытия','На открытой террасе ресторана ночью']},
+  {t:'Blindfold — игры с повязкой на глазах',i:4,n:'Лишение зрения обостряет все остальные чувства. Требует доверия.',q:['Жена с повязкой — не знает что будет дальше','Муж с повязкой — жена полностью управляет','Повязка и полная тишина — никаких подсказок','Повязка и связанные руки одновременно','Повязка и прикосновения неожиданными предметами','Повязка и оральные ласки без предупреждения','Повязка и шёпот фантазий на ухо','Долгое ожидание в повязке перед началом']},
+  {t:'Шибари — японское связывание верёвкой',i:4,n:'Искусство, требующее доверия и навыков.',q:['Декоративное связывание — эстетика и красота','Связывание верёвкой — ограничение движений','Шибари как прелюдия перед сексом','Шибари как часть секса','Быть связанной — роль жертвы','Быть связанным — роль жертвы','Связывать партнёра — роль риггера','Подвешивание в верёвках — риггинг']},
+  {t:'Лесбийские фантазии и бисексуальность',i:4,n:null,q:['Жена целуется с другой женщиной — муж наблюдает','Жена занимается сексом с другой женщиной — муж наблюдает, не участвует','Жена занимается сексом с другой женщиной — муж присоединяется','Оральный секс двух женщин — муж наблюдает','Две женщины ласкают мужа вместе','Поцелуи двух женщин как часть совместной прелюдии','Жена бисексуальна и хочет исследовать','Муж бисексуален и хочет исследовать','Совместный просмотр порно']},
+  {t:'Оральные практики',i:3,n:null,q:['Куннилингус — как прелюдия','Куннилингус — до оргазма','Поза face-sitting — она сидит на лице','Минет — нежный, ласковый, медленный и чувственный','Минет — жёсткий, страстный','Поза 69 — одновременно','Жёстко в рот — она в его власти','Deep throat — максимальная глубина','Финиш в рот','Глотание','Финиш на грудь или тело','Финиш на лицо','Оральные ласки со льдом или напитками','Смотреть в глаза во время орального','Минет двум мужчинам одновременно']},
+  {t:'Групповые практики',i:5,n:'Оценивайте каждый сценарий отдельно. Честность здесь особенно важна.',q:['Тройничок — мы и другая женщина','Тройничок — мы и другой мужчина','Двойное проникновение — оральный и вагинальный секс одновременно','Gang bang — жена и более двух мужчин','Два мужчины и две женщины','Три женщины и муж','Жена с несколькими женщинами — муж наблюдает','Муж наблюдает за сексом жены с другим мужчиной','Жена наблюдает за мужем с другой женщиной','Свинг — обмен партнёрами','Секс-вечеринка','Оргия — полное смешение, все со всеми','Оргия с акцентом на жену — она в центре внимания','Оргия с акцентом на мужа — он в центре внимания','Открытые отношения с правилами']},
+  {t:'Власть и подчинение — BDSM-спектр',i:4,n:'Стоп-слово — обязательное условие для всего из этого раздела!',q:['Он ведёт, она подчиняется — мягко','Она ведёт, он подчиняется — мягко','Жёсткое доминирование с его стороны','Жёсткое доминирование с её стороны','Команды и приказы во время секса','Просьба разрешения на оргазм','Грязные разговоры — взаимные','Ласковые слова — моя девочка, хорошая','Жёсткие слова — обговорить заранее','Связывание — шарф или мягкие наручники','Связывание рук и ног','Кляп — мягкий или специальный','Ошейник и поводок','Порка рукой — лёгкая','Порка плёткой, флоггером или ремнём','Зажимы для сосков','Воск на тело']},
+  {t:'Свинг-клубы и секс-позитивные вечеринки',i:5,n:'Оцени каждый сценарий отдельно — от наблюдения до участия.',q:['Побывать в клубе — просто посмотреть, без участия','Наблюдать за другими парами','Общаться и флиртовать с другими — без продолжения','Тематическая вечеринка в образе — костюм, роль','Жена флиртует — муж наблюдает издалека','Муж флиртует — жена наблюдает издалека','Вместе соблазняем третьего человека','Вместе соблазняем другую пару','Мягкий свинг — только поцелуи с другими','Полный свинг — обмен партнёрами в одной комнате','Полный свинг — в разных комнатах','Разойтись на вечеринке и встретиться в конце','Вечеринка только для пар — одиночки не допускаются','Приватная вечеринка у кого-то дома — небольшой круг','Вечеринка в масках — анонимность и маскарад']},
+  {t:'Gloryhole — анонимный контакт',i:5,n:'Анонимный оральный контакт через отверстие. Оцени каждый сценарий.',q:['Gloryhole — жена делает минет мужу','Gloryhole — анонимно, не знаю кто за стеной','Gloryhole — несколько партнёров по очереди','Gloryhole — муж рядом, наблюдает','Gloryhole — жена угадывает, где среди других муж','Gloryhole плюс повязка на глазах','Gloryhole — жена смотрит как мужу делают минет анонимно']},
+  {t:'Хочу попробовать',i:5,n:'Фантазии и желания — оцени честно, без осуждения.',q:['Чернокожего / чернокожую','Азиата / азиатку','Латиноамериканца / латиноамериканку','Big dick — большой и толстый','Очень большая грудь партнёрши','Маленькая грудь партнёрши','Крупные ягодицы','Миниатюрное тело','Асфиксия — лёгкое перекрытие дыхания (с партнёром)','Жёсткий секс — максимальная интенсивность','Squirting — сквирт по запросу','Edging — многократное доведение без оргазма','Orgasm denial — запрет на оргазм долгое время','Public humiliation — унижение при других (по договорённости)','Voyeurism — наблюдать за незнакомыми','Exhibitionism — быть увиденным незнакомым','Секс с порноактёром / порноактрисой']},
+  {t:'Что тебя возбуждает — твоими словами',i:1,n:'Напиши всё что не вошло в квиз. Любая деталь, образ, ситуация, фантазия.',q:['__freetext__']},
+  {t:'Что ты хотел / хотела бы попробовать',i:3,n:'Любые желания о которых пока молчишь.',q:['__freetext__']},
+  {t:'Что ты хотел / хотела бы улучшить в партнёре',i:2,n:'Честно и без осуждения. Это не критика — это запрос.',q:['__freetext__']},
+  {t:'Чего мне не хватает в партнёре',i:2,n:'Что хочется получать больше — внимания, нежности, страсти, инициативы, чего-то другого.',q:['__freetext__']},
+  {t:'Границы и табу — моё абсолютное нет',i:5,n:'Что никогда, ни при каких условиях. Партнёр должен это знать.',q:['__freetext__']},
+];
+
+const SC=[
+  {v:-3,l:'Табу',      d:'#b82828'},
+  {v:-2,l:'Не хочу',   d:'#8a3810'},
+  {v:-1,l:'Скорее нет',d:'#7a7018'},
+  {v: 0,l:'Нейтрально',d:'#3c4646'},
+  {v: 1,l:'Любопытно', d:'#285c28'},
+  {v: 2,l:'Хочу',      d:'#1a6090'},
+  {v: 3,l:'Огонь',      d:'#3040cc'},
+];
+const IL={1:'🌱 Мягко',2:'🌿 Умеренно',3:'🌶 Откровенно',4:'🔥 Смело',5:'⚡ Экстремально'};
+const SK='cq_v14';
+// Очищаем все старые версии при каждом открытии
+['cq_v1','cq_v2','cq_v3','cq_v4','cq_v5','cq_v6','cq_v7','cq_v8','cq_v9','cq_v10',
+ 'couples_quiz_v1','couples_quiz_v2','couples_quiz_v3','couples_quiz_v4','couples_quiz_v5',
+ 'couples_quiz_v6','couples_quiz_v7','couples_quiz_v8'].forEach(k=>localStorage.removeItem(k));
+const ld=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}};
+const sv=s=>{try{localStorage.setItem(SK,JSON.stringify(s))}catch{}};
+let state=ld(),who=null,ans={},nts={};
+const om=id=>document.getElementById(id).classList.add('on');
+const cm=id=>document.getElementById(id).classList.remove('on');
+function doReset(w){state=ld();if(w==='all')localStorage.removeItem(SK);else{delete state[w];sv(state);}cm('rst');state=ld();upSplash();}
+function show(id){['splash','quiz','results'].forEach(x=>document.getElementById(x).style.display='none');document.getElementById(id).style.display='block';window.scrollTo(0,0);}
+function goHome(){state=ld();upSplash();show('splash');}
+function goRes(){state=ld();if(!state.wife?.done&&!state.husband?.done){alert('Сначала заполните хотя бы одну анкету.');return;}renRes();show('results');}
+function refRes(){state=ld();renRes();}
+function upSplash(){
+  const s=ld(),wD=!!s.wife?.done,hD=!!s.husband?.done;
+  let d='';if(wD)d+='<span class="sdot">🌸 Жена — ответила</span>';if(hD)d+='<span class="sdot">🌊 Муж — ответил</span>';
+  document.getElementById('sdots').innerHTML=d;
+  document.getElementById('wd').textContent=wD?'✓ Ответила — изменить':'Начать анкету';
+  document.getElementById('hd').textContent=hD?'✓ Ответил — изменить':'Начать анкету';
+  const rb=document.getElementById('resBtn');rb.style.display=(wD||hD)?'flex':'none';if(wD||hD)rb.style.justifyContent='center';
+  
+  
+}
+function startQ(w){
+  who=w;state=ld();ans=state[w]?.answers?{...state[w].answers}:{};nts=state[w]?.notes?{...state[w].notes}:{};
+  const b=document.getElementById('qbadge');b.textContent=w==='wife'?'🌸 Жена':'🌊 Муж';b.className='qbadge '+w[0];
+  document.getElementById('sbtn').className='sbtn '+w[0];
+  document.getElementById('pb').className='pb '+w[0];
+  renQ();show('quiz');upP();
+}
+function qBack(){state=ld();state[who]=state[who]||{};state[who].answers={...ans};state[who].notes={...nts};sv(state);upSplash();show('splash');}
+function renQ(){
+  const body=document.getElementById('qbody');body.innerHTML='';
+  // legend
+  const lg=document.createElement('div');lg.className='leg';
+  lg.innerHTML='<div class="legt">Шкала оценок</div><div class="legr">'+SC.map(s=>`<div class="legrow"><div class="legd" style="background:${s.d}"></div><span style="font-size:10px;color:var(--mut)">${s.v>0?'+'+s.v:s.v} — ${s.l}</span></div>`).join('')+'</div>';
+  body.appendChild(lg);
+  SECTIONS.forEach((sec,si)=>{
+    const sh=document.createElement('div');sh.className='shdr';
+    sh.innerHTML=`<div class="smeta"><span class="snum">${si+1}/${SECTIONS.length}</span><span class="ibadge i${sec.i}">${IL[sec.i]}</span></div><div class="sname">${sec.t}</div>${sec.n?`<div class="snote">${sec.n}</div>`:''}`;
+    body.appendChild(sh);
+    sec.q.forEach((q,qi)=>{
+      const k=`${si}_${qi}`;
+      if(q==='__freetext__'){
+        const c=document.createElement('div');c.className='ftcard';
+        const ta=document.createElement('textarea');ta.className='ftarea';
+        ta.placeholder='Напиши здесь — партнёр увидит это в результатах...';
+        ta.value=nts[`ft_${si}`]||'';
+        ta.addEventListener('input',()=>{nts[`ft_${si}`]=ta.value;});
+        c.appendChild(ta);
+        body.appendChild(c);
+        return;
+      }
+      const c=document.createElement('div');c.className='card'+(ans[k]!==undefined?' ans':'');c.id='c_'+k;
+      const rh=SC.map(s=>`<button class="rbtn${ans[k]===s.v?' on':''}" data-v="${s.v}" onclick="rate('${k}',${s.v},this)"><span class="rv">${s.v>0?'+'+s.v:s.v}</span><span class="rl">${s.l}</span></button>`).join('');
+      c.innerHTML=`<div class="qt">${q}</div><div class="rrow">${rh}</div><button class="ntog" onclick="togN('${k}')">+ заметка</button><textarea class="nin" id="n_${k}" rows="2" placeholder="Условие..." oninput="svN('${k}',this.value)">${nts[k]||''}</textarea>`;
+      if(nts[k])setTimeout(()=>{const t=document.getElementById('n_'+k);if(t)t.style.display='block';},0);
+      body.appendChild(c);
+    });
+  });
+}
+function rate(k,v,btn){
+  if(ans[k]===v){delete ans[k];document.getElementById('c_'+k).querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));document.getElementById('c_'+k).classList.remove('ans');}
+  else{ans[k]=v;document.getElementById('c_'+k).querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('c_'+k).classList.add('ans');}
+  upP();
+}
+function togN(k){const t=document.getElementById('n_'+k);t.style.display=t.style.display==='block'?'none':'block';if(t.style.display==='block')t.focus();}
+function svN(k,v){nts[k]=v;}
+const totQ=()=>SECTIONS.reduce((a,s)=>a+s.q.filter(q=>q!=='__freetext__').length,0);
+function upP(){
+  const tot=totQ(),a=Object.keys(ans).length;
+  document.getElementById('pb').style.width=Math.round(a/tot*100)+'%';
+  document.getElementById('qcnt').textContent=`${a} из ${tot}`;
+  const btn=document.getElementById('sbtn');
+  if(a>=Math.floor(tot*.4)){btn.classList.add('on');btn.textContent=a===tot?'Готово! Сохранить':`Сохранить (${a}/${tot})`;}
+  else{btn.classList.remove('on');btn.textContent=`Ответьте хотя бы на 40% (${a}/${tot})`;}
+  const mid=window.innerHeight/2;let cur='';
+  document.querySelectorAll('.shdr').forEach(h=>{if(h.getBoundingClientRect().top<mid)cur=h.querySelector('.sname').textContent;});
+  document.getElementById('qsl').textContent=cur;
+}
+document.addEventListener('scroll',upP,{passive:true});
+function submitQ(){
+  if(Object.keys(ans).length<Math.floor(totQ()*.4))return;
+  state=ld();state[who]={answers:{...ans},notes:{...nts},done:true};sv(state);upSplash();
+  state=ld();
+  if(state[who==='wife'?'husband':'wife']?.done)goRes();
+  else{alert('Ответы сохранены! Когда партнёр заполнит анкету — нажмите «Посмотреть результаты».');show('splash');}
+}
+function renRes(){
+  state=ld();const wA=state.wife?.answers||{},hA=state.husband?.answers||{},wD=!!state.wife?.done,hD=!!state.husband?.done;
+  document.getElementById('ws').innerHTML=`<div class="wc f ${wD?'done':'pend'}"><div class="wcn">🌸 Жена</div><div class="wcs">${wD?'Ответила ✓':'Не заполнила'}</div></div><div class="wc m ${hD?'done':'pend'}"><div class="wcn">🌊 Муж</div><div class="wcs">${hD?'Ответил ✓':'Не заполнил'}</div></div>`;
+  document.getElementById('ew').style.display=wD?'flex':'none';
+  document.getElementById('eh').style.display=hD?'flex':'none';
+  const allK=new Set([...Object.keys(wA),...Object.keys(hA)]);
+  const hot=[],exp=[],conf=[];
+  allK.forEach(k=>{
+    const w=wA[k]??null,h=hA[k]??null;if(w===null||h===null)return;
+    const [si,qi]=k.split('_').map(Number);if(!SECTIONS[si])return;
+    const o={k,t:SECTIONS[si].q[qi],s:SECTIONS[si].t,i:SECTIONS[si].i,w,h};
+    if(w>=1&&h>=1)hot.push(o);
+    else if((w>=1&&h===0)||(h>=1&&w===0))exp.push(o);
+    else if((w>=1&&h<0)||(h>=1&&w<0))conf.push(o);
+  });
+  hot.sort((a,b)=>(b.w+b.h)-(a.w+a.h));
+  renHot(hot);renExp(exp);renConf(conf);renStat(wA,hA);renFreeText(state);
+  document.getElementById('rsub').textContent=`${hot.length} совпадений · ${exp.length} для разговора · ${conf.length} конфликтов`;
+}
+function renFreeText(state){
+  const el=document.getElementById('tFreeText');if(!el)return;
+  const wN=state.wife?.notes||{},hN=state.husband?.notes||{};
+  let h='';
+  SECTIONS.forEach((sec,si)=>{
+    if(!sec.q.includes('__freetext__'))return;
+    const wT=(wN[`ft_${si}`]||'').trim(),hT=(hN[`ft_${si}`]||'').trim();
+    if(!wT&&!hT)return;
+    h+=`<div class="ms"><div class="mst">📝 ${sec.t}</div>`;
+    if(wT)h+=`<div class="mi"><div class="mit"><span style="color:var(--af);font-size:10px">🌸 Жена:</span><br>${wT}</div></div>`;
+    if(hT)h+=`<div class="mi"><div class="mit"><span style="color:var(--am);font-size:10px">🌊 Муж:</span><br>${hT}</div></div>`;
+    h+='</div>';
+  });
+  el.innerHTML=h||'<div class="es">Никто не оставил текст</div>';
+}
+const iH=o=>`<div class="mi"><div class="mit">${o.t}<br><small style="color:var(--mut);font-size:9px">${o.s}</small></div><div class="msc"><span class="sc f">${o.w>0?'+'+o.w:o.w}</span><span class="sc m">${o.h>0?'+'+o.h:o.h}</span></div></div>`;
+function renHot(hot){
+  const el=document.getElementById('tHot');if(!hot.length){el.innerHTML='<div class="es">Нет совпадений — ответьте на больше вопросов 🙂</div>';return;}
+  const dr=hot.filter(x=>x.w===3&&x.h===3),wt=hot.filter(x=>(x.w>=2||x.h>=2)&&!(x.w===3&&x.h===3)),cu=hot.filter(x=>x.w===1&&x.h===1);
+  let h='';
+  if(dr.length)h+=`<div class="ms"><div class="mst">🔥 Оба мечтают <span class="mb hot">${dr.length}</span></div>${dr.map(iH).join('')}</div>`;
+  if(wt.length)h+=`<div class="ms"><div class="mst">✨ Оба хотят <span class="mb hot">${wt.length}</span></div>${wt.map(iH).join('')}</div>`;
+  if(cu.length)h+=`<div class="ms"><div class="mst">💫 Оба любопытны <span class="mb hot">${cu.length}</span></div>${cu.map(iH).join('')}</div>`;
+  el.innerHTML=h;
+}
+function renExp(exp){
+  const el=document.getElementById('tExplore');if(!exp.length){el.innerHTML='<div class="es">Нет таких пунктов</div>';return;}
+  const wW=exp.filter(x=>x.w>=1&&x.h===0),hW=exp.filter(x=>x.h>=1&&x.w===0);
+  let h=`<div style="background:rgba(126,184,212,.07);border:1px solid rgba(126,184,212,.15);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:rgba(200,220,240,.8);line-height:1.6">Один открыт, другой нейтрален (0). Повод поговорить — без давления.</div>`;
+  if(wW.length)h+=`<div class="ms"><div class="mst">🌸 Жена хочет, муж нейтрален <span class="mb exp">${wW.length}</span></div>${wW.map(iH).join('')}</div>`;
+  if(hW.length)h+=`<div class="ms"><div class="mst">🌊 Муж хочет, жена нейтральна <span class="mb exp">${hW.length}</span></div>${hW.map(iH).join('')}</div>`;
+  el.innerHTML=h;
+}
+function renConf(conf){
+  const el=document.getElementById('tConflict');
+  if(!conf.length){el.innerHTML='<div class="es">🎉 Конфликтов нет!</div>';return;}
+  el.innerHTML=`<div style="background:rgba(224,112,112,.08);border:1px solid rgba(224,112,112,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:rgba(240,200,200,.8);line-height:1.6">Один хочет, другой против. <strong>Не давите.</strong> Просто знайте о разнице.</div>`+conf.map(iH).join('');
+}
+function renStat(wA,hA){
+  const el=document.getElementById('tStats');
+  const wP=Object.values(wA).filter(v=>v>0).length,hP=Object.values(hA).filter(v=>v>0).length;
+  const wN=Object.keys(wA).length,hN=Object.keys(hA).length;
+  let rows='';
+  [1,2,3,4,5].forEach(lv=>{
+    const ss=SECTIONS.filter(s=>s.i===lv);if(!ss.length)return;
+    const tot=ss.reduce((a,s)=>a+s.q.length,0);
+    const wV=[],hV=[];
+    ss.forEach(sec=>{const si=SECTIONS.indexOf(sec);sec.q.forEach((_,qi)=>{const k=`${si}_${qi}`;if(wA[k]!==undefined)wV.push(wA[k]);if(hA[k]!==undefined)hV.push(hA[k]);});});
+    const wp=wV.length?Math.round(wV.filter(v=>v>0).length/tot*100):0;
+    const hp=hV.length?Math.round(hV.filter(v=>v>0).length/tot*100):0;
+    rows+=`<div style="padding:8px 0;border-bottom:1px solid var(--bdr)"><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><span class="ibadge i${lv}">${IL[lv]}</span><span style="font-size:9px;color:var(--mut)">${tot} вопросов</span></div><div style="display:flex;gap:5px;align-items:center"><span style="font-size:9px;color:var(--af);width:13px">🌸</span><div style="flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden"><div style="height:100%;width:${wp}%;background:var(--af);border-radius:2px"></div></div><span style="font-size:9px;color:var(--af);min-width:24px">${wp}%</span><span style="font-size:9px;color:var(--am);width:13px">🌊</span><div style="flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden"><div style="height:100%;width:${hp}%;background:var(--am);border-radius:2px"></div></div><span style="font-size:9px;color:var(--am);min-width:24px">${hp}%</span></div></div>`;
+  });
+  el.innerHTML=`<div style="display:flex;gap:10px;margin-bottom:16px"><div style="flex:1;text-align:center;padding:13px;background:rgba(232,160,192,.08);border:1px solid rgba(232,160,192,.2);border-radius:10px"><div style="font-size:9px;color:var(--mut);margin-bottom:5px">🌸 Жена открыта к</div><div style="font-size:26px;font-weight:700;color:var(--af)">${wP}</div><div style="font-size:9px;color:var(--mut)">из ${wN}</div></div><div style="flex:1;text-align:center;padding:13px;background:rgba(126,184,212,.08);border:1px solid rgba(126,184,212,.2);border-radius:10px"><div style="font-size:9px;color:var(--mut);margin-bottom:5px">🌊 Муж открыт к</div><div style="font-size:26px;font-weight:700;color:var(--am)">${hP}</div><div style="font-size:9px;color:var(--mut)">из ${hN}</div></div></div><div style="font-family:'Cormorant Garamond',serif;font-size:16px;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--bdr)">По уровням</div>${rows}`;
+}
+function swTab(t){
+  const ts=['hot','explore','conflict','stats','freeText'];
+  document.querySelectorAll('.tbtn').forEach((b,i)=>b.classList.toggle('on',ts[i]===t));
+  ts.forEach(x=>{const e=document.getElementById('t'+x[0].toUpperCase()+x.slice(1));if(e)e.classList.toggle('on',x===t);});
+}
+upSplash();
+
+</script>
+</body>
+</html>
