@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Опросник близости</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  :root{
+    --bg:#241726; --surface:#2f2038; --surface2:#3a2843;
+    --ink:#f2e9ec; --muted:#ab8fa0;
+    --a:#d1a35c; --b:#c1495f; --good:#8bbf77; --line:#4a3552;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;padding-bottom:90px;}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 18px 0;}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:2.1rem;margin:0 0 4px;letter-spacing:.3px;}
+  .sub{color:var(--muted);font-size:.9rem;margin:0 0 20px;line-height:1.5;}
+  .home-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer;}
+  .home-card .emoji{font-size:1.8rem;}
+  .home-card .txt h3{margin:0 0 3px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;}
+  .home-card .txt p{margin:0;color:var(--muted);font-size:.8rem;}
+  .home-card.results{background:linear-gradient(135deg,var(--surface2),var(--surface));border-color:var(--a);}
+  .status-pill{font-family:'IBM Plex Mono',monospace;font-size:.66rem;padding:3px 8px;border-radius:99px;background:var(--surface2);color:var(--muted);margin-left:auto;flex-shrink:0;}
+  .status-pill.done{color:var(--good);}
+  .server-note{font-size:.76rem;color:var(--muted);text-align:center;margin:18px 0 6px;line-height:1.5;}
+  .progress-bar{height:6px;background:var(--surface);border-radius:99px;overflow:hidden;margin-bottom:20px;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--b),var(--a));width:0%;transition:width .3s;}
+  .progress-label{font-size:.76rem;color:var(--muted);margin-top:6px;}
+  details{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+  summary{padding:14px 16px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.1rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  summary::-webkit-details-marker{display:none;}
+  summary .arrow{color:var(--muted);font-size:.8rem;transition:transform .2s;}
+  details[open] summary .arrow{transform:rotate(90deg);}
+  .item{padding:13px 16px;border-top:1px solid var(--line);}
+  .item-text{font-size:.93rem;margin-bottom:9px;line-height:1.4;}
+  .row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+  .row input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:99px;background:var(--line);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--a);box-shadow:0 0 0 3px var(--bg);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;border:none;background:var(--a);box-shadow:0 0 0 3px var(--bg);cursor:pointer;}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:600;width:30px;text-align:center;flex-shrink:0;padding:3px 0;border-radius:6px;background:var(--surface2);}
+  .subrow{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .caption{font-size:.68rem;color:var(--muted);}
+  .wish-check{display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;padding:4px 10px 4px 6px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);}
+  .wish-check input{width:15px;height:15px;accent-color:var(--a);cursor:pointer;flex-shrink:0;}
+  .wish-check span{font-size:.68rem;color:var(--muted);white-space:nowrap;}
+  .wish-check.checked{background:rgba(209,163,92,.18);border-color:var(--a);}
+  .wish-check.checked span{color:var(--a);}
+  .open-item{padding:13px 16px;border-top:1px solid var(--line);}
+  .open-q{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.02rem;margin-bottom:8px;}
+  textarea{width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:'Inter';font-size:.87rem;resize:vertical;min-height:44px;}
+  .cta-bar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg,var(--bg) 60%,transparent);padding:22px 18px 18px;display:flex;justify-content:center;gap:10px;}
+  .cta{background:var(--a);color:#241726;border:none;font-family:'Inter';font-weight:600;font-size:.94rem;padding:14px 26px;border-radius:99px;cursor:pointer;box-shadow:0 6px 20px rgba(209,163,92,.35);max-width:420px;width:100%;}
+  .cta.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);box-shadow:none;max-width:140px;}
+  .cta:active{transform:scale(.98);}
+  .res-header{text-align:center;margin-bottom:22px;padding-top:6px;}
+  .res-section{margin-bottom:24px;}
+  .res-section h2{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;margin:0 0 4px;}
+  .res-section .desc{color:var(--muted);font-size:.8rem;margin-bottom:12px;}
+  .res-list{list-style:none;padding:0;margin:0;}
+  .res-list li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:.89rem;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .res-list li .cat{color:var(--muted);font-size:.66rem;display:block;margin-top:2px;}
+  .res-list li .score{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);flex-shrink:0;white-space:nowrap;}
+  .mutual h2{color:var(--good);} .gentle h2{color:var(--a);} .discuss h2{color:#e0b878;} .boundary h2{color:var(--b);}
+  .joint h2{color:#e0a8c8;} .personal-w h2{color:var(--a);} .personal-h h2{color:var(--b);}
+  .empty-note{color:var(--muted);font-size:.84rem;font-style:italic;}
+  .open-answers{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+  .open-answers .q{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1rem;margin-bottom:8px;}
+  .open-answers .ans{font-size:.87rem;margin-bottom:4px;}
+  .open-answers .ans .tag{font-family:'IBM Plex Mono',monospace;font-size:.66rem;margin-right:6px;}
+  .open-answers .ans.a .tag{color:var(--a);} .open-answers .ans.b .tag{color:var(--b);}
+  .open-answers .ans.empty{color:var(--muted);font-style:italic;}
+  .action-row{display:flex;gap:10px;margin:18px 0;}
+  .action-row button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'Inter';font-size:.85rem;cursor:pointer;}
+  .action-row button.primary{background:var(--a);color:#241726;border:none;font-weight:600;}
+  .waiting-box{text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px 20px;margin-top:20px;}
+  .waiting-box .big{font-size:2rem;margin-bottom:10px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;max-width:360px;width:100%;}
+  .modal h3{margin:0 0 8px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;}
+  .modal p{color:var(--muted);font-size:.85rem;margin:0 0 16px;}
+  .modal button{display:block;width:100%;padding:11px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);margin-bottom:8px;cursor:pointer;font-family:'Inter';font-size:.87rem;}
+  .modal button.danger{background:var(--b);border:none;color:#fff;}
+  .modal button.cancel{background:transparent;}
+
+  .compare-cat{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+  .compare-cat summary{padding:13px 16px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.05rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  .compare-cat summary::-webkit-details-marker{display:none;}
+  .compare-cat summary .arrow{color:var(--muted);font-size:.8rem;transition:transform .2s;}
+  .compare-cat[open] summary .arrow{transform:rotate(90deg);}
+  .compare-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line);}
+  .compare-row.match-exact{background:rgba(209,163,92,.16);border-left:3px solid var(--a);}
+  .compare-row.match-close{background:rgba(209,163,92,.06);}
+  .compare-row .ctext{flex:1;font-size:.87rem;line-height:1.35;}
+  .compare-row .cscores{display:flex;gap:6px;flex-shrink:0;}
+  .compare-row .cbadge{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:600;width:34px;text-align:center;padding:3px 0;border-radius:6px;}
+  .compare-row .cbadge.w{background:rgba(209,163,92,.2);}
+  .compare-row .cbadge.h{background:rgba(193,73,95,.2);}
+  .compare-legend{display:flex;gap:14px;font-size:.72rem;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;}
+  .compare-legend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="cta-bar" id="ctaBar" style="display:none"></div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalBody"></div></div>
+
+<script>
+/* ---------- ДАННЫЕ ---------- */
+const DATA = [
+["Внешность и тело",[
+"Руки, кисти, пальцы","Плечи и спина","Грудь","Живот и талия","Ягодицы","Бёдра и ноги","Шея и ключицы","Губы",
+"Глаза и взгляд","Голос — тембр и интонации","Высокий рост возбуждает","Стройное и подтянутое телосложение",
+"Мускулистое, атлетическое тело","Мягкое, пышное телосложение","Гладкое тело без волос","Естественное тело с волосами"]],
+["Запах, звук, ощущения",[
+"Натуральный запах тела","Запах духов или парфюма","Запах кожи после душа","Тепло тела в объятиях",
+"Прикосновение рук партнёра","Голос во время возбуждения","Звуки удовольствия партнёра","Долгий зрительный контакт заводит"]],
+["Романтика и эмоциональная близость",[
+"Неожиданные свидания","Совместная ванна при свечах","Совместный душ","Массаж без перехода в секс",
+"Массаж с переходом в секс","Медленный танец","Танец с другими людьми — эротический флёр","Долгие поцелуи без продолжения",
+"Секс при свечах или под музыку","Откровенные сообщения и переписка в течение дня","Обмен интимными фото",
+"Онлайн-секс по видеосвязи на расстоянии","Слова любви и зрительный контакт во время секса","Утренний секс",
+"Сбежать вдвоём в отель — только мы","Засыпать в обнимку голыми"]],
+["Образ жены",[
+"Кружевное или красивое бельё","Чулки и пояс для чулок","Корсет или боди","Прозрачное или открытое бельё",
+"Шёлковый халат или пеньюар","Высокие каблуки или ботфорты в постели","Тематический костюм — медсестра, секретарша, горничная",
+"Латекс, кожа или винил","Спортивная форма или лосины","Стриптиз — медленное раздевание","Маски или парики — смена образа",
+"Жена раздета, муж одет","Жена без нижнего белья — никто не знает","Ошейник или браслет как знак подчинения"]],
+["Образ мужа",[
+"Деловой образ — костюм или рубашка","Небрежно — рубашка расстёгнута, только джинсы","Классические боксеры",
+"Облегающие слипы или тонги","Спортивная форма","Военный или брутальный образ","Смокинг или вечерний стиль",
+"Фартук и ничего больше","Сразу нагота — одежда лишняя","Ошейник или браслет как знак подчинения"]],
+["Прелюдия и поцелуи",[
+"Долгая прелюдия — без спешки","Минимум прелюдии — сразу к делу","Страстные поцелуи с языком","Поцелуи и покусывание шеи",
+"Засосы — скрытые, под одеждой","Шёпот на ухо","Поцелуи груди и живота","Поцелуи внутренней стороны бёдер",
+"Поцелуи ягодиц и стоп","Лёгкие покусывания","Дыхание и тепло кожи — без спешки","Раздевание зубами"]],
+["Сенсорные ощущения",[
+"Лёд или холод на коже","Перья, шёлк или мех по коже","Лёгкое царапание ногтями","Глубокое царапание — оставлять следы",
+"Шлепки по ягодицам — лёгкие","Шлепки по ягодицам — сильные","Массажное масло и ароматы","Зеркала — смотреть на себя",
+"Полная темнота — только ощущения"]],
+["Тантра и йога-фантазии",[
+"Тантрический секс — часами, без цели оргазма","Синхронное дыхание во время секса","Медитация вдвоём перед сексом",
+"Медленный секс в позе лотоса","Обмен энергией без проникновения","Йони-массаж для неё","Лингам-массаж для него",
+"Практика задержки оргазма"]],
+["Эротический разогрев",[
+"Партнёр выбирает всё — я подчиняюсь","Я выбираю всё — партнёр подчиняется","Вечер полностью без слов",
+"Смотреть в глаза в момент оргазма","Угадывать части тела с завязанными глазами","Возбудить партнёра — не касаясь интимных мест",
+"Совместный просмотр порно"]],
+["Позы и динамика секса",[
+"Миссионерская — нежно, с объятиями","Наездница","Обратная наездница","Догги-стайл","Ложечкой","Стоя или у стены",
+"На столе, кухне, ванной","Медленный чувственный секс","Быстрый страстный секс","Грубый секс"]],
+["Игрушки и аксессуары",[
+"Вибратор для неё — самостоятельно","Вибратор во время совместного секса","Виброкольцо на партнёре",
+"Дилдо или увеличенные игрушки","Лубриканты с эффектом","Съедобные масла или сливки на теле",
+"Дистанционная игрушка на публике — никто кроме нас не знает","Секс-машина"]],
+["Съёмка и наблюдение",[
+"Снять для себя и сразу удалить","Снять и оставить","Смотреть как партнёр мастурбирует","Мастурбировать при партнёре",
+"Совместная мастурбация рядом","Профессиональная эротическая фотосессия","Профессиональная порно-съёмка"]],
+["Ролевые игры и сценарии",[
+"Незнакомцы в баре","Учитель и студентка","Босс и секретарша","Доктор/медсестра и пациент(ка)","Массажист и клиентка",
+"Полицейский и нарушительница","Работник сервиса и хозяйка","Принц и служанка / викинг и пленница","Историческая эпоха",
+"Фэнтези","Игра пикап","Сценарий измены","Сценарий бывших","Знаменитость и фанат(ка)",
+"Сценарий \"принуждение\" по заранее оговорённому согласию","Игра в первое свидание"]],
+["Секс вне дома — места и природа",[
+"Спальня","Кухня","Ванная/душ","Гостиная","Коридор/прихожая","Балкон/терраса","Лестница в подъезде","Номер отеля",
+"Люкс/пентхаус","Домик в лесу/у воды","Палатка","Глэмпинг","Домик на дереве/бунгало над водой","Купе поезда",
+"Каюта яхты/лайнера","Самолёт","В машине на парковке","На капоте/в багажнике","Минет в машине на ходу","Пляж ночью",
+"Пляж днём","Лес/поляна","В горах","В поле/винограднике","На крыше","Под водопадом","Бассейн/джакузи","В море","Сауна/хаммам"]],
+["Секс в публичных и рискованных местах",[
+"Кинотеатр","Примерочная","Ресторан","Лифт","Вечеринка","Концерт/фестиваль","Парк ночью","Офис после работы",
+"Библиотека","Чужой дом","Смотровая площадка","Заброшенное здание","Стадион","Музей/галерея","Терраса ресторана ночью",
+"Осознанный \"почти попались\" риск"]],
+["Игры с повязкой на глазах",[
+"Жена с повязкой","Муж с повязкой","Повязка и тишина","Повязка и связанные руки","Повязка и неожиданные прикосновения",
+"Повязка и оральные ласки","Повязка и шёпот фантазий","Повязка и секс с анонимом"]],
+["Шибари",[
+"Декоративное связывание","Ограничение движений верёвкой","Как прелюдия","Как часть секса","Роль жертвы (жена)",
+"Роль жертвы (муж)","Роль риггера","Подвешивание","Обучение верёвочному бондажу с инструктором/курсом"]],
+["Лесбийские фантазии и бисексуальность",[
+"Жена целуется с девушкой — муж наблюдает","Оральные ласки и близость между двумя девушками — муж наблюдает",
+"Жена занимается сексом с девушкой — муж наблюдает","Жена с девушкой — муж присоединяется",
+"Жена и вторая девушка вместе ласкают мужа","Жена хочет исследовать свою бисексуальность",
+"Жена и девушка проводят время вместе — без мужа"]],
+["Игры и челленджи с компанией",[
+"Стрип-покер или игры на раздевание","Игры в карты на желание","Бутылочка","Правда или действие","Запретные фанты"]],
+["Оральные практики",[
+"Куннилингус как прелюдия","Куннилингус до оргазма","Жена садится сверху на лицо мужу (face-sitting)","Минет нежный",
+"Минет жёсткий","Поза 69","Глубокий минет на всю длину (deep throat)","Финиш в рот","Глотание","Финиш на грудь/тело",
+"Финиш на лицо","Оральные ласки со льдом/напитками","Смотреть в глаза во время орального"]],
+["Свинг-клубы и вечеринки",[
+"Сходить в клуб с партнёром","Сходить одному/одной без партнёра","Тематическая вечеринка в образе","Вечеринка в масках",
+"Флирт без продолжения","Жена флиртует, муж наблюдает","Муж флиртует, жена наблюдает","Соблазняем третьего вместе",
+"Соблазняем пару вместе","Мягкий свинг — ласки и петтинг с другими, без проникновения","Полный свинг в одной комнате",
+"Полный свинг в разных комнатах","Разойтись и встретиться в конце","Хотвайф — жена развлекается с другими мужчинами",
+"Куколд — жена занимается сексом с другими при муже","Куквинн — муж занимается сексом с другими при жене",
+"Бык — муж приглашает третьего специально ради удовольствия жены",
+"Обратный «бык» — жена приглашает третью специально ради удовольствия мужа"]],
+["Групповые практики",[
+"Жена делает минет двум мужчинам","Муж ласкает двух женщин","ЖМЖ — тройничок с женщиной","МЖМ — тройничок с мужчиной",
+"Жену одновременно имеют в рот и киску (spitroast)","Жена — групповой секс с несколькими мужчинами по очереди (gang bang)",
+"Секс вчетвером — два на два (foursome)","Три женщины и муж","Жена с несколькими женщинами","Свинг — обмен партнёрами",
+"Оргия — все со всеми"]],
+["Власть и подчинение — BDSM",[
+"Муж доминирует, жена подчиняется","Жена доминирует, муж подчиняется","Грязные разговоры","Ласковые слова",
+"Связывание мягкое","Связывание рук и ног","Кляп","Ошейник и поводок","Порка рукой","Порка плёткой/флоггером/ремнём",
+"Зажимы для сосков","Воск на тело","Меня привязывают к кресту","Клетка","Секс-качели"]],
+["Глорихол",[
+"Минет мужу через отверстие в стене","Анонимно — жена не знает, кто с другой стороны","Жена обслуживает несколько дырок одновременно",
+"Жена угадывает мужа","Глорихол с повязкой на глазах","Жена наблюдает, как мужу анонимно делают минет"]],
+["Хочу попробовать",[
+"Партнёр чернокожий/чернокожая","Партнёр мулат/мулатка","Партнёр азиат/азиатка","Партнёр латинос/латина",
+"Партнёр с Ближнего Востока","Большой/толстый член","Два члена одновременно","Большая грудь","Маленькая грудь",
+"Миниатюрное тело","Лёгкая асфиксия","Жёсткий секс","Сквирт — женская эякуляция","Лёгкое унижение (заранее оговорённые границы)",
+"Вуайеризм — возбуждает наблюдать за другими","Эксгибиционизм — возбуждает, когда видят тебя","Секс с порноактёром/актрисой"]]
+];
+
+const OPEN_QUESTIONS = [
+  ["Своими словами", "Что тебя возбуждает — своими словами"],
+  ["Своими словами", "Что хотел(а) бы попробовать"],
+  ["Своими словами", "Что хотел(а) бы пожелать партнёру"],
+  ["Своими словами", "Чего не хватает в партнёре"],
+  ["Своими словами", "Границы и табу"],
+  ["Общий фон", "От чего либидо растёт, от чего падает?"],
+  ["Общий фон", "Что для тебя вообще значит \"хороший секс\"?"],
+  ["Тело", "Какие зоны тела недостаточно \"используются\"?"],
+  ["Тело", "Есть что-то, что партнёр делает сейчас, что тебе не очень — но ты молчал(а)?"],
+  ["Опыт втроём", "Момент из прошлого опыта, который зацепил больше всего?"],
+  ["Опыт втроём", "Момент, который вызвал дискомфорт или ревность, даже если тогда промолчал(а)?"],
+  ["Границы", "Есть что-то из прошлого, о чём партнёру стоит знать, чтобы случайно не задеть?"],
+  ["Фантазии", "Есть ли тип человека, чьё присутствие в фантазии заводит?"],
+  ["После", "Что тебе нужно после секса — объятия, разговор, тишина, сон?"],
+  ["После", "Как ты хочешь, чтобы с тобой обращались, если что-то пошло не так эмоционально?"]
+];
+
+let ITEMS = []; let gid = 1;
+DATA.forEach(([cat, texts]) => { texts.forEach(t => { ITEMS.push({id: gid, cat, text: t}); gid++; }); });
+const TOTAL = ITEMS.length;
+
+const HAS_SERVER = typeof window.storage !== 'undefined';
+const ROLES = { wife: {label:'Жена', emoji:'🌸'}, husband: {label:'Муж', emoji:'🌊'} };
+let memoryStore = {};
+
+async function saveAnswers(role, payload){
+  const key = 'answers:'+role;
+  if(HAS_SERVER){
+    try{ await window.storage.set(key, JSON.stringify(payload), true); return true; }
+    catch(e){ console.error(e); return false; }
+  } else { memoryStore[key] = JSON.stringify(payload); return true; }
+}
+async function loadAnswers(role){
+  const key = 'answers:'+role;
+  if(HAS_SERVER){
+    try{ const r = await window.storage.get(key, true); return r ? JSON.parse(r.value) : null; }
+    catch(e){ return null; }
+  } else { return memoryStore[key] ? JSON.parse(memoryStore[key]) : null; }
+}
+async function deleteAnswers(role){
+  const key = 'answers:'+role;
+  if(HAS_SERVER){ try{ await window.storage.delete(key, true); }catch(e){} }
+  else { delete memoryStore[key]; }
+}
+
+const app = document.getElementById('app');
+const ctaBar = document.getElementById('ctaBar');
+function setCta(html){ ctaBar.innerHTML = html; ctaBar.style.display = html ? 'flex' : 'none'; }
+
+async function renderHome(){
+  setCta('');
+  const wA = await loadAnswers('wife');
+  const hA = await loadAnswers('husband');
+  app.innerHTML = `
+    <h1>Опросник близости</h1>
+    <p class="sub">Заполните анкету порознь — каждый видит только свои вопросы, пока не откроете общий результат.</p>
+    <div class="home-card" onclick="openQuiz('wife')">
+      <span class="emoji">🌸</span>
+      <div class="txt"><h3>Для жены</h3><p>Начать или продолжить анкету</p></div>
+      <span class="status-pill ${wA?'done':''}">${wA ? 'заполнено' : 'не начато'}</span>
+    </div>
+    <div class="home-card" onclick="openQuiz('husband')">
+      <span class="emoji">🌊</span>
+      <div class="txt"><h3>Для мужа</h3><p>Начать или продолжить анкету</p></div>
+      <span class="status-pill ${hA?'done':''}">${hA ? 'заполнено' : 'не начато'}</span>
+    </div>
+    <div class="home-card results" onclick="openResults()">
+      <span class="emoji">✨</span>
+      <div class="txt"><h3>Посмотреть результаты</h3><p>Вишлисты, совпадения и открытые ответы</p></div>
+    </div>
+    <div class="action-row"><button onclick="openResetModal()">🗑 Сбросить данные</button></div>
+    <p class="server-note">${HAS_SERVER
+      ? 'Ответы сохраняются на сервере — заполняйте с разных устройств, результаты увидят оба.'
+      : '⚠️ Общее хранилище недоступно в этом окне — ответы сохранятся только в этой вкладке.'}</p>
+  `;
+}
+
+async function openQuiz(role){
+  const existing = await loadAnswers(role) || {scores:{}, open:{}, wishlist:{}};
+  renderQuiz(role, existing);
+}
+
+function renderQuiz(role, existing){
+  const scores = existing.scores || {};
+  const open = existing.open || {};
+  const wishlist = existing.wishlist || {};
+  const info = ROLES[role];
+  app.innerHTML = `<h1>${info.emoji} Анкета: ${info.label}</h1>
+    <p class="sub">Оцени каждый пункт от <strong style="color:var(--b)">−3</strong> (категорически нет) до <strong style="color:var(--a)">+3</strong> (очень хочу). Отдельно можно отметить галочкой «в вишлист» — независимо от оценки.</p>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel"></div>
+    <div id="categories"></div>`;
+
+  const container = document.createElement('div');
+  let out = '';
+  DATA.forEach(([cat, texts], catIdx) => {
+    const startId = ITEMS.findIndex(it => it.cat === cat) + 1;
+    out += `<details ${catIdx===0?'open':''}><summary>${cat}<span class="arrow">▸</span></summary>`;
+    if(cat === "Внешность и тело"){
+      out += `<div style="padding:10px 16px 0;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1rem;color:var(--muted);">Меня заводит:</div>`;
+    }
+    texts.forEach((text, i) => {
+      const id = startId + i;
+      const v = scores[id] !== undefined ? scores[id] : 0;
+      const checked = !!wishlist[id];
+      out += `<div class="item">
+        <div class="item-text">${text}</div>
+        <div class="row">
+          <input type="range" min="-3" max="3" step="1" value="${v}" oninput="updateScore('${role}',${id},this.value)">
+          <span class="badge" id="badge-${id}" style="color:${badgeColor(v)}">${fmt(v)}</span>
+        </div>
+        <div class="subrow">
+          <span class="caption" id="cap-${id}">${CAPTIONS[v]}</span>
+          <label class="wish-check ${checked?'checked':''}" id="wish-${id}">
+            <input type="checkbox" ${checked?'checked':''} onchange="updateWish('${role}',${id},this.checked)">
+            <span>в вишлист</span>
+          </label>
+        </div>
+      </div>`;
+    });
+    out += `</details>`;
+  });
+
+  out += `<details><summary>Открытые вопросы<span class="arrow">▸</span></summary>`;
+  OPEN_QUESTIONS.forEach((oq, idx) => {
+    out += `<div class="open-item">
+      <div class="open-q">${oq[1]}</div>
+      <textarea oninput="updateOpen('${role}',${idx},this.value)">${open[idx]||''}</textarea>
+    </div>`;
+  });
+  out += `</details>`;
+  document.getElementById('categories').innerHTML = out;
+
+  curScores[role] = {...scores};
+  curOpen[role] = {...open};
+  curWishlist[role] = {...wishlist};
+  updateProgress(role);
+
+  setCta(`<button class="cta ghost" onclick="renderHome()">← Назад</button>
+    <button class="cta" onclick="submitQuiz('${role}')">Сохранить ответы</button>`);
+}
+
+let curScores = {wife:{}, husband:{}};
+let curOpen = {wife:{}, husband:{}};
+let curWishlist = {wife:{}, husband:{}};
+
+const CAPTIONS = {"-3":"Категорически нет","-2":"Скорее нет","-1":"Не тянет","0":"Нейтрально","1":"Интересно","2":"Хочу","3":"Очень хочу"};
+function fmt(v){ v=parseInt(v); return (v>0?'+':'')+v; }
+function badgeColor(v){ v=parseInt(v); if(v<=-2)return"#c1495f"; if(v===-1)return"#8a6a78"; if(v===0)return"#ab8fa0"; if(v===1)return"#c9b27a"; return"#d1a35c"; }
+
+function updateScore(role,id,val){
+  val=parseInt(val);
+  curScores[role][id]=val;
+  document.getElementById('badge-'+id).textContent=fmt(val);
+  document.getElementById('badge-'+id).style.color=badgeColor(val);
+  document.getElementById('cap-'+id).textContent=CAPTIONS[val];
+  updateProgress(role);
+}
+function updateOpen(role,idx,val){ curOpen[role][idx]=val; }
+function updateWish(role,id,val){
+  curWishlist[role][id]=val;
+  const el = document.getElementById('wish-'+id);
+  if(val) el.classList.add('checked'); else el.classList.remove('checked');
+}
+function updateProgress(role){
+  const answered = Object.keys(curScores[role]).length;
+  const pct = Math.round((answered/TOTAL)*100);
+  const fill = document.getElementById('progressFill');
+  const lbl = document.getElementById('progressLabel');
+  if(fill){ fill.style.width=pct+'%'; }
+  if(lbl){ lbl.textContent = `${answered} из ${TOTAL} пунктов`; }
+}
+
+async function submitQuiz(role){
+  const payload = { scores: curScores[role], open: curOpen[role], wishlist: curWishlist[role], savedAt: Date.now() };
+  const ok = await saveAnswers(role, payload);
+  if(ok){ alert('Ответы сохранены.'); renderHome(); }
+  else { alert('Не удалось сохранить. Попробуйте ещё раз.'); }
+}
+
+async function openResults(){
+  const w = await loadAnswers('wife');
+  const h = await loadAnswers('husband');
+  setCta(`<button class="cta ghost" onclick="renderHome()">← Назад</button>
+    <button class="cta" onclick="copyResults()">Скопировать текст</button>`);
+  if(!w || !h){
+    app.innerHTML = `<h1>Результаты</h1>
+      <div class="waiting-box"><div class="big">⏳</div>
+      <p>${!w && !h ? 'Пока никто не заполнил анкету.' : (!w ? 'Ждём ответы жены 🌸' : 'Ждём ответы мужа 🌊')}</p></div>`;
+    return;
+  }
+  window._lastResults = {w,h};
+  renderResults(w,h);
+}
+
+function classify(w,h){
+  const mutual=[],gentleW=[],gentleH=[],discuss=[],boundary=[];
+  ITEMS.forEach(it=>{
+    const a = w.scores[it.id] !== undefined ? parseInt(w.scores[it.id]) : 0;
+    const b = h.scores[it.id] !== undefined ? parseInt(h.scores[it.id]) : 0;
+    if(a<=-2 || b<=-2){ boundary.push({...it,a,b}); return; }
+    if(a>=2 && b>=2){ mutual.push({...it,a,b}); return; }
+    if(a>=2 && b>=-1 && b<=1){ gentleW.push({...it,a,b}); return; }
+    if(b>=2 && a>=-1 && a<=1){ gentleH.push({...it,a,b}); return; }
+    if((a>=2 && b===-1)||(b>=2 && a===-1)){ discuss.push({...it,a,b}); return; }
+  });
+  mutual.sort((x,y)=>(y.a+y.b)-(x.a+x.b));
+  gentleW.sort((x,y)=>y.a-x.a); gentleH.sort((x,y)=>y.b-x.b);
+  return {mutual,gentleW,gentleH,discuss,boundary};
+}
+
+function wishlists(w,h){
+  const wWish = w.wishlist||{}, hWish = h.wishlist||{};
+  const personalW=[], personalH=[], joint=[];
+  ITEMS.forEach(it=>{
+    const inW = !!wWish[it.id], inH = !!hWish[it.id];
+    if(inW && inH) joint.push(it);
+    else if(inW) personalW.push(it);
+    else if(inH) personalH.push(it);
+  });
+  return {personalW, personalH, joint};
+}
+
+function scoreStr(a,b){ return `${a>0?'+':''}${a} / ${b>0?'+':''}${b}`; }
+function section(cls,title,desc,arr,mode){
+  let inner = arr.length===0 ? `<p class="empty-note">Пока пусто</p>` :
+    `<ul class="res-list">`+arr.map(it=>{
+      let right = '';
+      if(mode==='score') right = `<span class="score">${scoreStr(it.a,it.b)}</span>`;
+      return `<li><div>${it.text}<span class="cat">${it.cat}</span></div>${right}</li>`;
+    }).join('')+`</ul>`;
+  return `<div class="res-section ${cls}"><h2>${title}</h2><p class="desc">${desc}</p>${inner}</div>`;
+}
+
+function renderFullComparison(w,h){
+  let html = `<div class="res-section">
+    <h2 style="color:var(--ink)">🔍 Все ответы рядом</h2>
+    <p class="desc">Оценки обоих по каждому пункту — совпадения подсвечены</p>
+    <div class="compare-legend">
+      <span><span class="dot" style="background:rgba(209,163,92,.6)"></span>Полное совпадение</span>
+      <span><span class="dot" style="background:rgba(209,163,92,.25)"></span>Близко (разница в 1)</span>
+      <span><span class="dot" style="background:rgba(209,163,92,.5)"></span>🌸 Жена</span>
+      <span><span class="dot" style="background:rgba(193,73,95,.5)"></span>🌊 Муж</span>
+    </div>`;
+  DATA.forEach(([cat, texts], catIdx) => {
+    const startId = ITEMS.findIndex(it => it.cat === cat) + 1;
+    html += `<details class="compare-cat"><summary>${cat}<span class="arrow">▸</span></summary>`;
+    if(cat === "Внешность и тело"){
+      html += `<div style="padding:10px 16px 0;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1rem;color:var(--muted);">Меня заводит:</div>`;
+    }
+    texts.forEach((text, i) => {
+      const id = startId + i;
+      const a = w.scores[id] !== undefined ? parseInt(w.scores[id]) : 0;
+      const b = h.scores[id] !== undefined ? parseInt(h.scores[id]) : 0;
+      const diff = Math.abs(a-b);
+      const cls = diff===0 ? 'match-exact' : (diff===1 ? 'match-close' : '');
+      html += `<div class="compare-row ${cls}">
+        <div class="ctext">${text}</div>
+        <div class="cscores">
+          <span class="cbadge w">${fmt(a)}</span>
+          <span class="cbadge h">${fmt(b)}</span>
+        </div>
+      </div>`;
+    });
+    html += `</details>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderResults(w,h){
+  const {mutual,gentleW,gentleH,discuss,boundary} = classify(w,h);
+  const {personalW,personalH,joint} = wishlists(w,h);
+  let html = `<h1>✨ Результаты</h1><p class="sub">🌸 Жена и 🌊 Муж</p>`;
+
+  html += section('joint','💞 Совместный вишлист','Оба отметили галочкой — точно пробуем',joint,'plain');
+  html += section('personal-w','🌸 Личный вишлист жены','Отметила только она — можно бережно предложить',personalW,'plain');
+  html += section('personal-h','🌊 Личный вишлист мужа','Отметил только он — можно бережно предложить',personalH,'plain');
+
+  html += renderFullComparison(w,h);
+
+  html += section('mutual','💛 Взаимное желание (по шкале)','Оба оценили высоко, даже если не отмечали галочкой',mutual,'score');
+  html += section('gentle','🌸 Жена хочет, муж нейтрален','По шкале — можно бережно предложить',gentleW,'score');
+  html += section('gentle','🌊 Муж хочет, жена нейтральна','По шкале — можно бережно предложить',gentleH,'score');
+  html += section('discuss','🗣️ Требует разговора','Один сильно хочет, другой скорее против',discuss,'score');
+  html += section('boundary','🚫 Жёсткие границы','Хотя бы один поставил −2 или −3 — уважаем, без уговоров',boundary,'plain');
+
+  html += `<div class="res-section"><h2 style="color:var(--ink)">📝 Своими словами</h2><p class="desc">Добавляется в общий вишлист автоматически</p>`;
+  OPEN_QUESTIONS.forEach((oq,idx)=>{
+    const a = (w.open && w.open[idx] || '').trim();
+    const b = (h.open && h.open[idx] || '').trim();
+    html += `<div class="open-answers"><div class="q">${oq[1]}</div>
+      <div class="ans a ${a?'':'empty'}"><span class="tag">Жена:</span>${a||'нет ответа'}</div>
+      <div class="ans b ${b?'':'empty'}"><span class="tag">Муж:</span>${b||'нет ответа'}</div></div>`;
+  });
+  html += `</div>`;
+  app.innerHTML = html;
+}
+
+function copyResults(){
+  if(!window._lastResults){ alert('Сначала откройте результаты.'); return; }
+  const {w,h} = window._lastResults;
+  const {mutual,gentleW,gentleH,discuss,boundary} = classify(w,h);
+  const {personalW,personalH,joint} = wishlists(w,h);
+  let txt = `ОПРОСНИК БЛИЗОСТИ — Жена и Муж\n\n`;
+  const dumpPlain=(title,arr)=>{
+    txt+=`${title}\n`;
+    if(arr.length===0) txt+=`  (пусто)\n`;
+    arr.forEach(it=>txt+=`  - ${it.text}\n`);
+    txt+=`\n`;
+  };
+  const dumpScore=(title,arr)=>{
+    txt+=`${title}\n`;
+    if(arr.length===0) txt+=`  (пусто)\n`;
+    arr.forEach(it=>txt+=`  - ${it.text} (${scoreStr(it.a,it.b)})\n`);
+    txt+=`\n`;
+  };
+  dumpPlain('СОВМЕСТНЫЙ ВИШЛИСТ', joint);
+  dumpPlain('ЛИЧНЫЙ ВИШЛИСТ ЖЕНЫ', personalW);
+  dumpPlain('ЛИЧНЫЙ ВИШЛИСТ МУЖА', personalH);
+  dumpScore('ВЗАИМНОЕ ЖЕЛАНИЕ (ПО ШКАЛЕ)', mutual);
+  dumpScore('ЖЕНА ХОЧЕТ, МУЖ НЕЙТРАЛЕН', gentleW);
+  dumpScore('МУЖ ХОЧЕТ, ЖЕНА НЕЙТРАЛЬНА', gentleH);
+  dumpScore('ТРЕБУЕТ РАЗГОВОРА', discuss);
+  dumpPlain('ЖЁСТКИЕ ГРАНИЦЫ (не трогаем)', boundary);
+  txt+=`СВОИМИ СЛОВАМИ\n`;
+  OPEN_QUESTIONS.forEach((oq,idx)=>{
+    const a=(w.open&&w.open[idx]||'').trim()||'—';
+    const b=(h.open&&h.open[idx]||'').trim()||'—';
+    txt+=`  ${oq[1]}\n    Жена: ${a}\n    Муж: ${b}\n`;
+  });
+  navigator.clipboard.writeText(txt).then(()=>alert('Скопировано в буфер обмена')).catch(()=>alert('Не удалось скопировать — выделите текст вручную.'));
+}
+
+function openResetModal(){
+  document.getElementById('modalBody').innerHTML = `
+    <h3>Сбросить данные</h3>
+    <p>Выберите чьи ответы удалить. Действие необратимо.</p>
+    <button onclick="doReset('wife')">🌸 Ответы жены</button>
+    <button onclick="doReset('husband')">🌊 Ответы мужа</button>
+    <button class="danger" onclick="doReset('all')">⚠️ Всё полностью</button>
+    <button class="cancel" onclick="closeModal()">Отмена</button>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+async function doReset(who){
+  if(who==='all'){ await deleteAnswers('wife'); await deleteAnswers('husband'); }
+  else{ await deleteAnswers(who); }
+  closeModal(); renderHome();
+}
+
+renderHome();
+</script>
+</body>
+</html>
